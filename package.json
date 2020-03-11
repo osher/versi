@@ -1,0 +1,34 @@
+{
+  "name": "versi",
+  "version": "0.6.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "versi": "bin/cli"
+  },
+  "files": [
+    "bin",
+    "lib"
+  ],
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "debug": "^4.1.1",
+    "minimist": "^1.2.3",
+    "semver": "^7.1.3"
+  },
+  "devDependencies": {
+    "mocha": "^7.1.0",
+    "should": "^13.2.3"
+  },
+  "scripts": {
+    "tefst": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  }
+}
