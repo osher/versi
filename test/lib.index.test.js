@@ -1,3 +1,4 @@
+const childProcess = require('child_process');
 const Should = require('should');
 const SUT = require('../lib/index')
 
@@ -5,22 +6,41 @@ describe("main module (lib/index)", () => {
   it('should be a factory function that expects options', () => {
     Should(SUT).be.a.Function().have.property('length', 1)
   });
+  let instance;
 
-
-  describe(".nextFreeVersion(verStr, map)", () => {
-    let instance;
-
-    before(() => {
-      instance = SUT({
-        args: {
-          pkg: {
-            name: "@playbuzz/some-package",
-            version: "1.1.0",
-          }
+  before(() => {
+    instance = SUT({
+      args: {
+        pkg: {
+          name: "@playbuzz/some-package",
+          version: "1.1.0",
         }
+      }
+    })
+  });
+
+  describe(".mapVersions(versions)", () => {
+    describe("when called with", () => {
+      [{ 
+        title: "a single version - should be mapped to a single key",
+        versions: [ "1.0.0" ],
+        expect: { "1.0": [0] }
+      }, { 
+        title: "a many versions of few major-minor pairs - should map per major-minor key, sorted",
+        versions: [ "1.0.0", "1.0.1", "1.0.2", "1.1.1", "1.1.0", "1.2.4", , "1.2.3" ],
+        expect: { 
+          "1.0": [0, 1, 2],
+          "1.1": [0,1],
+          "1.2": [3,4],
+        }
+      }].forEach(({ title, versions, expect}) => {
+        it(title, () => {
+          Should(instance.mapVersions(versions)).eql(expect);
+        });
       })
     });
-
+  });
+  describe(".nextFreeVersion(verStr, map)", () => {
     [{
       title: 'when package.json expresses a new range',
       then: 'should use version from package',
@@ -69,5 +89,38 @@ describe("main module (lib/index)", () => {
         })
       })
     })
+  });
+
+  describe(".getPublishedVersions(name)", () => {
+    describe("when `npm info` returns with an unexpected error", () => {
+      const orig = childProcess.exec;
+      const ctx = {};
+      before(() => {
+        childProcess.exec = (cmd, cb) => {
+          process.nextTick(() => cb(null, {
+            stdout: JSON.stringify({ 
+              error: {
+                code: 'not E 400 + 4',
+                some: 'info',
+                ofThe: 'error'
+            }})
+          }));
+        };
+
+        return instance
+          .getPublishedVersions('some-name')
+          .then(res => ctx.res = res)
+          .catch(err => ctx.err = err)
+      });
+      after(() => childProcess.exec = orig);
+      it("should output the error with any additional info", () => {
+        Should(ctx.err).be.an.Error()
+        .properties({
+          code: 'not E 400 + 4',
+          some: 'info',
+          ofThe: 'error'
+        })
+      })
+    });
   });
 });

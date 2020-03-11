@@ -76,9 +76,11 @@ The advantage here is that you can run it immediately after your checkout phase,
 7. update the package.json by replacing the version field
 8. prints the updated package file, the version in package.json when the tool loaded, and the next version updated. e.g:
 ```
-     { packageFile: '/home/usr/versi/test/fixtures/package1/package.json',
-       foundVersion: '1.2.0',
-       nextVersion: '1.2.17' }
+     { 
+       "packageFile": "/home/usr/versi/test/fixtures/package1/package.json",
+       "foundVersion": "1.2.0",
+       "nextVersion": "1.2.17"
+     }
 ```
 
 **Note:** currently, prerelease versions are not supported. We may support it in a future version.
@@ -87,10 +89,20 @@ The advantage here is that you can run it immediately after your checkout phase,
 - uses the npm client installed on your build agent, and therefore, supports `.npmrc` and local npm-client users setup on your build agents.
 - the vanilla run works on the `package.json` in current directory
 - can accept path via CLI argument `-p/--path` as absolute or relative to `pwd`.
-- ATM - it's slim and minimal (depends only on `minimist` and `semver`)
+- ATM - it's slim and minimal (depends only on `minimist`, `semver` and `debug`)
 
 ## Future
 - implement CLI args to support workflow of pre-release increments - e.g. - based on branches.
 
+## Debug
+```
+DEBUG=versi:* versi
+```
+
+## Test
+```
+npm run test
+```
+
 ## Lisence
-- MIT and that's it :)
+- **MIT** and that's it :)
