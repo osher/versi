@@ -33,6 +33,25 @@ describe("main module (lib/index)", () => {
           "1.1": [0,1],
           "1.2": [3,4],
         }
+      }, {
+        title: "many versions from same maj-min",
+        versions: [ '1.0.0',
+          '1.0.1',
+          '1.0.2',
+          '1.0.3',
+          '1.0.4',
+          '1.0.5',
+          '1.0.6',
+          '1.0.7',
+          '1.0.8',
+          '1.0.9',
+          '1.0.10',
+          '1.0.11',
+          '1.0.12'
+        ],
+        expect: {
+          "1.0": [0,1,2,3,4,5,6,7,8,9,10,11,12]
+        },      
       }].forEach(({ title, versions, expect}) => {
         it(title, () => {
           Should(instance.mapVersions(versions)).eql(expect);
