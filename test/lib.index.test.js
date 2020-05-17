@@ -21,14 +21,14 @@ describe("main module (lib/index)", () => {
 
   describe(".mapVersions(versions)", () => {
     describe("when called with", () => {
-      [{ 
+      [{
         title: "a single version - should be mapped to a single key",
         versions: [ "1.0.0" ],
         expect: { "1.0": [0] }
-      }, { 
+      }, {
         title: "a many versions of few major-minor pairs - should map per major-minor key, sorted",
         versions: [ "1.0.0", "1.0.1", "1.0.2", "1.1.1", "1.1.0", "1.2.4", , "1.2.3" ],
-        expect: { 
+        expect: {
           "1.0": [0, 1, 2],
           "1.1": [0,1],
           "1.2": [3,4],
@@ -51,7 +51,7 @@ describe("main module (lib/index)", () => {
         ],
         expect: {
           "1.0": [0,1,2,3,4,5,6,7,8,9,10,11,12]
-        },      
+        },
       }].forEach(({ title, versions, expect}) => {
         it(title, () => {
           Should(instance.mapVersions(versions)).eql(expect);
@@ -65,7 +65,7 @@ describe("main module (lib/index)", () => {
       then: 'should use version from package',
       map: {
         '1.1': [0,1,2,3],
-        '1.2': [0,1,2], 
+        '1.2': [0,1,2],
         '1.3': [0,1,2],
       },
       verStr: "1.4.4", //<-- not in map
@@ -117,7 +117,7 @@ describe("main module (lib/index)", () => {
       before(() => {
         childProcess.exec = (cmd, cb) => {
           process.nextTick(() => cb(null, {
-            stdout: JSON.stringify({ 
+            stdout: JSON.stringify({
               error: {
                 code: 'not E 400 + 4',
                 some: 'info',
@@ -140,6 +140,30 @@ describe("main module (lib/index)", () => {
           ofThe: 'error'
         })
       })
+    });
+
+    describe("when `npm info` returns with an unexpected error in non-json output", () => {
+      const orig = childProcess.exec;
+      const ctx = {};
+      before(() => {
+        childProcess.exec = (cmd, cb) => {
+          process.nextTick(() => cb(null, {
+            stdout: new Error('oups, I did it again').stack
+          }));
+        };
+
+        return instance
+          .getPublishedVersions('some-name')
+          .then(res => ctx.res = res)
+          .catch(err => ctx.err = err)
+      });
+      after(() => childProcess.exec = orig);
+      it("should output the error with any additional info", () => {
+        Should(ctx.err).be.an.Error()
+            .properties(['stdout'])
+            .property('stdout')
+            .match(/Error: oups, I did it again/);
+      });
     });
   });
 });
