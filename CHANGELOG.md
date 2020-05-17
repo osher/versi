@@ -1,5 +1,7 @@
+0.6.6
+ - fix - handle non-json response form npm versions
 0.6.4
- - fix a bug in the versions sort 
+ - fix a bug in the versions sort
 
 0.6.3
  - use ISC lisence
