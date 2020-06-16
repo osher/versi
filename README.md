@@ -1,5 +1,7 @@
 # Versi - a ci tool to manage automatic bumps for node-packages versions
 
+[![Known Vulnerabilities](https://snyk.io/test/github/osher/versi/badge.svg?targetFile=package.json)](https://snyk.io/test/github/osher/versi?targetFile=package.json)
+
 ## The probelm
 Given that:
 - npm registry requires versions to be ***immutable***:
