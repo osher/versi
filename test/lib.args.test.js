@@ -26,34 +26,71 @@ describe('lib/args', () => {
       },
     }, {
       title: "vanilla run, with no package.json in current directory - should end with error",
-      process: { 
+      process: {
         cwd: () => '/',
         argv: [],
       },
       expect: {
         errMsg: /cannot find module/i,
-      }
+      },
     }, {
       title: "provided --path with file-not-found - should end with error",
-      process: { 
+      process: {
         cwd: () => '/',
         argv: ['node', 'cli.js', '--path', '/no/such/package.json'],
       },
       expect: {
         errMsg: /cannot find module/i,
-      }
+      },
     }, {
       title: "provided --path with an existing package.json - should load it well",
-      process: { 
+      process: {
         cwd: () => '/',
         argv: ['node', 'cli.js', '--path', 'test/fixtures/package1/package.json'],
       },
       expect: {
         packageFile: cwdFile('test/fixtures/package1/package.json'),
         pkgName: pkg1.name,
-        pkgVersion: pkg1.version,      }
+        pkgVersion: pkg1.version,
+      },
+    }, {
+      title: "provided --prerelease - should contain the passed prerelease value",
+      process: {
+        cwd: () => '/',
+        argv: ['node', 'cli.js', '--path', 'test/fixtures/package1/package.json', '--prerelease', 'alpha'],
+      },
+      expect: {
+        packageFile: cwdFile('test/fixtures/package1/package.json'),
+        pkgName: pkg1.name,
+        pkgVersion: pkg1.version,
+        ignorePrerelease: true,
+      },
+    }, {
+      title: "provided -t - should contain the passed prerelease value",
+      process: {
+        cwd: () => '/',
+        argv: ['node', 'cli.js', '--path', 'test/fixtures/package1/package.json', '-t', 'beta'],
+      },
+      expect: {
+        packageFile: cwdFile('test/fixtures/package1/package.json'),
+        pkgName: pkg1.name,
+        pkgVersion: pkg1.version,
+        prerelease: 'beta',
+      },
+    }, {
+      title: "provided -t with characters illegal for semver tag - should contain the sanitized value",
+      process: {
+        cwd: () => '/',
+        argv: ['node', 'cli.js', '--path', 'test/fixtures/package1/package.json', '-t', 'feat/port-8080'],
+      },
+      expect: {
+        packageFile: cwdFile('test/fixtures/package1/package.json'),
+        pkgName: pkg1.name,
+        pkgVersion: pkg1.version,
+        prerelease: 'feat_port-8080',
+      },
     }].forEach(({ title, process, expect: {
-      packageFile, pkgName, pkgVersion, errMsg
+      packageFile, pkgName, pkgVersion, prerelease, errMsg
     }}) => {
       describe(title, () => {
         let result, err;
@@ -73,7 +110,7 @@ describe('lib/args', () => {
         }
 
         it('sould not fail', () => {
-          Should.not.exist(err);
+          if (err) throw err;
         });
 
         describe("the returned args", () => {
@@ -91,6 +128,10 @@ describe('lib/args', () => {
 
           pkgVersion && it('should include .pkg.version: ' + pkgVersion, () => {
             Should(result).have.property('pkg').property('version', pkgVersion);
+          });
+
+          prerelease && it('should include .prerelease: ' + prerelease, () => {
+            Should(result).have.property('prerelease', prerelease);
           });
         });
       });

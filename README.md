@@ -17,12 +17,12 @@ There are two approaches, pending the organization culture.
  > if the current version is occupied - it should not be published.
  > if developers mean to publish a new version - they should have the version bumped.
 
-If this is your approach - this package is not for you.
+If this is your approach - this package is not for your current project.
 
 ### automatic updates
  > if changes were made and all tests have passed - I would like a new version to be published.
 
-In this case, all you have to do is run `versi` as part of your ci.
+In this case, all you have to do is run `versi` as part of your CI.
 You can do it either in your project root, or provide it with `-p/--path` to the `package.json` you need it's version updated, and `versi` will fix the version for you (explained better in *How it works* section below).
 
 ## Adhering to Semver and recommended workflow
@@ -64,36 +64,74 @@ The advantage here is that you can run it immediately after your checkout phase,
 
 e.g. see it early in build log, set build-name even if your did not get to the publish stage(Jenkins/blue-ocean)
 
+## Features
+- uses the npm client installed on your build agent, and therefore, supports `.npmrc` and/or local npm-client users setup on your build agents.
+- the vanilla run works on the `package.json` in current directory
+- supports path injection via CLI argument `-p/--path` as absolute or relative to `pwd`, to the directory where target  `package.json` should be found.
+- supports a prerelease mode - pass the prerelease tag using `-l/prerelease` CLI switch
+- ATM - it's slim and minimal (depends only on `minimist`, `semver` and `debug`)
+
 ## How it works
 1. find the target `package.json` file, or fail with an error.
 2. extract `name` and `version` from the target `package.json`, and parse it's `version` field usign `semver`
-3. find the published version for your package, using the `npm` client found locally (or fail with error).
-4. select the published versions which begin with the same major and minor as the version in your `package.json` file.
-5. keep the version from the target `package.json` file when:
-    - there are no published versions with same major and minor (i.e - developer updated it manually to communicate `semver` sematics)
-    - the patch in `package.json` is higher than last published versions (i.e - developer updated it manually)
-6. otherwise - increases the latest published version with same major and minor parts, and uses that as the next version.
-7. update the package.json by replacing the version field. Original file indentations are preserved.
-8. prints the path to the updated `package.json` file, the version in `package.json` when the tool loaded, and the version it has ended wtith. e.g:
-```
-     { 
-       "packageFile": "/home/usr/versi/test/fixtures/package1/package.json",
-       "foundVersion": "1.2.0",
-       "nextVersion": "1.2.17"
-     }
-```
+3. find the published versions for your package, using the `npm` client found locally (or fail with error).
+4. compute the next available version using the version from the `package.json` file and the versions returned by npm.
+   This is done in either `release` mode, or in `pre-release` mode - find the details below.
+5. update the package.json by replacing the version field using string manipulation - i.e - original file indentations are preserved.
+6. prints a summary with:
+   - the path to the updated `package.json` file,
+   - the version in `package.json` when the tool loaded,
+   - and the version it has ended with.
 
-**Note:** currently, prerelease versions are not supported. We may support it in a future version.
+   e.g:
+    ```
+         {
+           "packageFile": "/home/usr/versi/test/fixtures/package1/package.json",
+           "foundVersion": "1.2.0",
+           "nextVersion": "1.2.17"
+         }
+    ```
 
-## Features
-- uses the npm client installed on your build agent, and therefore, supports `.npmrc` and local npm-client users setup on your build agents.
-- the vanilla run works on the `package.json` in current directory
-- can accept path via CLI argument `-p/--path` as absolute or relative to `pwd`.
-- ATM - it's slim and minimal (depends only on `minimist`, `semver` and `debug`)
+### release mode
+This mode assures that the end result is a clean semver version, includes only major, minor and patch.
+
+e.g.: `"2.3.1"`, `"1.0.5"`, `0.8.4`
+
+This mode is used when no prerelease tag is found in both the `package.json`, nor in a `-t/--prerelease-tag` CLI switch.
+
+The algorithm in this case is:
+ 1. filter from all published versions all versions that start with the same major and minor.
+ 2. Use the version from package.json in any of the following cases:
+    - no versions pass the filter - (this is the case of a new major/minor pair)
+    - the version from `package.json` is higher by semver rules than any of the filtered versions
+      (this is a case of a jump in the running patch number imposed by developers).
+ 3. Otherwise - take the latest by semver rules, and increase it's patch by one - and return that as the new version.
+
+### prerelease mode
+This mode publishes a *prerelease* version - i.e - a version that includes a prerelease semver tag.
+
+Package users will not get this versions unless they ask for them _*explicitly*_.
+
+e.g.: `"2.3.1-feat_users-api"`, `"1.0.5-beta.3"`, `0.8.4-chore_refactor-for-resilience.12`
+
+This mode is used when a semver prerelease tag is found in either the `package.json`, or in the `-t/--prerelease-tag` CLI switch provided.
+
+Notes:
+ - When both the tool and the `package.json` contain a prerelease tag value - the CLI switch cascades.
+ - the tool knows to distinct the running number in the end of the prerelease tag when such number is found.
+   If no prerelease running number is found in a version selected for incrementation - it will be added as 0, which complies with semver rules.
+ - when the passed prerelease tag contains characters unfit for preerelease tag (e.g. a name of a branch with slash inside) - it is sanitized by replacing any non `[a-zA-Z0-9.-]` with underscore.
+
+The algorithm in this case is:
+ 1. filter from all published versions all versions that start with the same major and minor, patch and prerelease, not including the optional running number in the end of the tag.
+ 2. Use the version from package.json in any of the following cases:
+    - no versions pass the filter (this is the case of a new tag)
+    - the version from `package.json` is higher by semver rules than any of the filtered versions
+      (this is a case of a jump in the running number imposed by developers).
+ 3. Otherwise - take the latest by semver rules, and increase it's tag's running numeric number - and return that as the new version.
 
 ## Future
-- implement CLI args to support workflow of pre-release increments - e.g. - based on branches.
-- travis & coveralls integration
+- travis & coveralls integration based on in-build env vars
 
 ## Debug
 ```
