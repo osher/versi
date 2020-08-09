@@ -148,6 +148,18 @@ describe("main module (lib/index)", () => {
       verStr: "1.2.1-beta.3", // <--- bigger
       expect: "1.2.1-beta.3"
     }, {
+      title: 'when package.json tag has no numeric ending, but such versions are found',
+      then: 'should use version from package',
+      versions: [ '1.2.1-beta.0', '1.2.1-beta.1', '1.2.1-beta.2' ], //<----- smaller
+      verStr: "1.2.1-beta", // <--- bigger
+      expect: "1.2.1-beta.3"
+    }, {
+      title: 'when package.json tag has no numeric ending, and no such versions are found',
+      then: 'should use version from package',
+      versions: [], //<----- does not contain
+      verStr: "1.2.2-beta", // <--- 1.2.2 not found in versions
+      expect: "1.2.2-beta.0"
+    }, {
       title: 'when package.json is equal to last published version',
       then: 'should use incremented last version',
       versions: [ '1.2.1-beta.0', '1.2.1-beta.1', '1.2.1-beta.2' ], //<----- equal
