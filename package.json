@@ -1,6 +1,6 @@
 {
   "name": "versi",
-  "version": "0.7.0",
+  "version": "0.7.2",
   "description": "a ci tool to manage automatic bumps versions of node-packages",
   "main": "index.js",
   "bin": {
