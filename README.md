@@ -1,4 +1,6 @@
 # Versi - a ci tool to manage automatic bumps for node-packages versions
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fosher%2Fversi.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fosher%2Fversi?ref=badge_shield)
+
 
 [![Known Vulnerabilities](https://snyk.io/test/github/osher/versi/badge.svg?targetFile=package.json)](https://snyk.io/test/github/osher/versi?targetFile=package.json)
 
@@ -149,3 +151,7 @@ npm run test
 - [**ISC**](https://choosealicense.com/licenses/isc/)
    - you may do with the source code anything you like
    - there is no warranty on our end
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fosher%2Fversi.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fosher%2Fversi?ref=badge_large)
