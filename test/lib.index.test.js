@@ -182,6 +182,48 @@ describe("main module (lib/index)", () => {
   });
 
   describe(".getPublishedVersions(name)", () => {
+    describe("when `npm info` returns one version as string (happened with verdaccio)", () => {
+      const orig = childProcess.exec;
+      const ctx = {};
+      before(() => {
+        childProcess.exec = (cmd, cb) => {
+          process.nextTick(() => cb(null, {
+            stdout: '"1.0.0"'
+          }));
+        };
+
+        return instance
+          .getPublishedVersions('some-name')
+          .then(res => ctx.res = res)
+          .catch(err => ctx.err = err)
+      });
+      after(() => childProcess.exec = orig);
+      it("should yield the version as an array", () => {
+        Should(ctx.res).eql(['1.0.0']);
+      })
+    });
+
+    describe("when `npm info` returns version array", () => {
+      const orig = childProcess.exec;
+      const ctx = {};
+      before(() => {
+        childProcess.exec = (cmd, cb) => {
+          process.nextTick(() => cb(null, {
+            stdout: '["1.0.0","1.1.0"]'
+          }));
+        };
+
+        return instance
+          .getPublishedVersions('some-name')
+          .then(res => ctx.res = res)
+          .catch(err => ctx.err = err)
+      });
+      after(() => childProcess.exec = orig);
+      it("should yield the version as an array", () => {
+        Should(ctx.res).eql(['1.0.0', '1.1.0']);
+      })
+    });
+
     describe("when `npm info` returns with an unexpected error", () => {
       const orig = childProcess.exec;
       const ctx = {};

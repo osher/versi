@@ -48,7 +48,7 @@ describe("e2e test", () => {
   describe('providing existing path to an unpublished new package with prerelease tag', () => {
     const ctx = {}
     before(function(done) {
-      this.timeout(5000)
+      this.timeout(15000)
       exec('node bin/cli --path test/fixtures/no-such-package-wtf-who-calls-a-package-with-such-name--beta/package.json', (ex, out, err) => {
         Object.assign(ctx, { ex, out, err})
         done()

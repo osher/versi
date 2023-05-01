@@ -1,3 +1,9 @@
+0.7.4
+ - fix - got from verdaccio for a package with one version a string instead of an array
+
+0.7.2
+ - add package-name to the output
+
 0.7.0
  - Breaking Change:
    when a version is tagged with a prerelease-tag, it should not be considered taken.
